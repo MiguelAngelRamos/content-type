@@ -1,0 +1,45 @@
+[
+  {
+    "model": "nucleo.producto",
+    "pk": 1,
+    "fields": {
+      "nombre": "Monitor LG UltraWide 34\"",
+      "precio": "8999.00",
+      "descripcion": "Monitor curvo 3440x1440, 144Hz, panel IPS, ideal para trabajo y gaming."
+    }
+  },
+  {
+    "model": "nucleo.producto",
+    "pk": 2,
+    "fields": {
+      "nombre": "Teclado Mecánico Keychron K2",
+      "precio": "2500.00",
+      "descripcion": "Teclado 75%, switches Brown, retroiluminación RGB, compatible Mac y Windows."
+    }
+  },
+  {
+    "model": "nucleo.producto",
+    "pk": 3,
+    "fields": {
+      "nombre": "Silla Ergonómica ErgoFlex Pro",
+      "precio": "12500.00",
+      "descripcion": "Soporte lumbar ajustable, reposabrazos 4D, malla transpirable. 8 horas de comodidad."
+    }
+  },
+  {
+    "model": "nucleo.articuloblog",
+    "pk": 1,
+    "fields": {
+      "titulo": "ContentTypes en Django: La magia del polimorfismo explicada",
+      "contenido": "El framework Django incluye un sistema llamado ContentTypes que permite a un modelo relacionarse con cualquier otro modelo de la aplicación sin modificar su estructura. Esto es especialmente útil cuando necesitas implementar comentarios, tags, likes, o notificaciones que pueden apuntar a múltiples tipos de objetos. En este artículo exploramos cómo funciona internamente y por qué es una de las herramientas más poderosas del ecosistema Django."
+    }
+  },
+  {
+    "model": "nucleo.articuloblog",
+    "pk": 2,
+    "fields": {
+      "titulo": "GenericRelation vs ForeignKey: ¿Cuándo usar cada uno?",
+      "contenido": "Una ForeignKey tradicional apunta a un modelo específico y fijo. Una GenericForeignKey, en cambio, puede apuntar a cualquier modelo del proyecto. La diferencia es fundamental: con ForeignKey el esquema de BD tiene una columna con el nombre del modelo destino; con GenericForeignKey el destino se resuelve en tiempo de ejecución usando content_type_id + object_id. Este artículo compara ambos patrones con ejemplos reales de código Django."
+    }
+  }
+]

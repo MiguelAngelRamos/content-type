@@ -1,9 +1,282 @@
 {% extends "nucleo/base.html" %}
 
+{% block title %}Feed Principal — ContentTypes Demo{% endblock %}
+
 {% block content %}
 
-{% for producto in productos %}
-{% empty %}
-<p>No hay productos disponibles.</p>
-{% endfor %}
+
+
+<!-- =========================================================================
+     GRID PRINCIPAL: Productos (izquierda) | Artículos Blog (derecha)
+     ========================================================================= -->
+<div class="row g-4">
+
+    <!-- =====================================================================
+         COLUMNA IZQUIERDA: PRODUCTOS
+         ===================================================================== -->
+    <div class="col-lg-6">
+        <p class="section-header">
+            <span class="badge-section badge-producto me-2">
+                <i class="fa-solid fa-box me-1"></i>E-Commerce
+            </span>
+            Productos
+        </p>
+
+        {% for producto in productos %}
+        <!--
+            Iteramos cada Producto del QuerySet devuelto por Producto.objects.all().
+            Cada 'producto' aquí es una instancia Python de la clase Producto.
+        -->
+        <div class="card-dark p-4 mb-3">
+
+            <!-- Encabezado del producto -->
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <div>
+                    <a href="{% url 'nucleo:producto_detail' producto.pk %}"
+                       class="text-primary-custom fw-600 text-decoration-none"
+                       style="font-size:1rem; color: var(--text-primary);">
+                        {{ producto.nombre }}
+                    </a>
+                    <div class="precio-tag mt-1">${{ producto.precio }}</div>
+                </div>
+                <span class="badge-section badge-producto">ID: {{ producto.id }}</span>
+            </div>
+
+            {% if producto.descripcion %}
+            <p class="text-muted-custom mt-2 mb-3" style="font-size:0.85rem;">
+                {{ producto.descripcion }}
+            </p>
+            {% endif %}
+
+            <hr class="divider">
+
+            <!-- Comentarios existentes del producto -->
+            {% with comentarios=producto.comentarios.all %}
+            {% if comentarios %}
+            <div class="mb-3">
+                <p class="section-header">
+                    <i class="fa-regular fa-comments me-1"></i>
+                    {{ comentarios.count }} Comentario{{ comentarios.count|pluralize }}
+                    <span class="badge-section badge-comentario ms-2">content_type={{ tipo_prod }}</span>
+                </p>
+                <!--
+                    producto.comentarios.all() usa el GenericRelation [4] para construir:
+                    SELECT * FROM nucleo_comentario
+                      WHERE content_type_id = {{ tipo_prod }}
+                      AND object_id = {{ producto.id }}
+
+                    No hay joins complejos — ContentTypes ya resolvió el mapeo.
+                -->
+                {% for comentario in comentarios %}
+                <div class="comment-item">
+                    <div class="d-flex justify-content-between">
+                        <span class="comment-autor">
+                            <i class="fa-solid fa-user me-1" style="font-size:0.7rem;"></i>
+                            {{ comentario.autor }}
+                        </span>
+                        <span class="comment-fecha">
+                            {{ comentario.fecha_creacion|date:"d/m/Y H:i" }}
+                        </span>
+                    </div>
+                    <p class="comment-texto mb-0">{{ comentario.texto }}</p>
+                    <!--
+                        DATO PEDAGÓGICO: comentario.object_id == producto.id
+                        y comentario.content_type_id == tipo_prod
+                        Ese par único identifica a qué Producto pertenece este comentario.
+                    -->
+                    <small class="text-muted-custom" style="font-size:0.68rem;">
+                        object_id={{ comentario.object_id }} · ct={{ comentario.content_type_id }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted-custom mb-3" style="font-size:0.82rem;">
+                <i class="fa-regular fa-comment me-1"></i>Sin comentarios todavía.
+            </p>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Formulario para agregar comentario al Producto -->
+            <!--
+                [9] EL ENVÍO CERRADO DE LA METADATA ESTRUCTURAL:
+                Este formulario apunta a la ÚNICA vista 'agregar_comentario'.
+                Los dos inputs ocultos son la clave del sistema polimórfico:
+            -->
+            <form action="{% url 'nucleo:agregar_comentario' %}" method="POST">
+                {% csrf_token %}
+
+                <!--
+                    Este <input> oculto inyecta el ID constante de la Tabla ContentType ('tipo_prod').
+                    Por ejemplo, si Producto es el modelo 6 en BD, mandará siempre 6 aquí.
+                -->
+                <input type="hidden" name="content_type_id" value="{{ tipo_prod }}">
+
+                <!--
+                    Este <input> oculto extrae e inyecta el ID individual del producto interactuado.
+                    Si estamos viendo el Monitor Samsung, mandará el id 23.
+                -->
+                <input type="hidden" name="object_id" value="{{ producto.id }}">
+
+                <div class="mb-2">
+                    <input type="text"
+                           name="autor"
+                           class="form-ctrl-dark form-control mb-2"
+                           placeholder="Tu nombre (opcional)"
+                           maxlength="80">
+                </div>
+                <div class="input-group">
+                    <input type="text"
+                           name="texto"
+                           class="form-ctrl-dark form-control"
+                           placeholder="Escribe tu review del producto..."
+                           required>
+                    <button type="submit" class="btn-pastel-purple">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Enlace al detalle del producto -->
+            <div class="mt-3">
+                <a href="{% url 'nucleo:producto_detail' producto.pk %}" class="btn-pastel-blue">
+                    <i class="fa-solid fa-arrow-right me-1"></i>Ver detalle
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <!--
+            { % empty % } se ejecuta si el queryset 'productos' está vacío.
+            Útil para dar feedback visual sin necesitar un if/else separado.
+            NOTA: Se escaparon las llaves en este comentario porque Django
+            parsea las etiquetas de template incluso dentro de comentarios HTML.
+        -->
+        <div class="card-dark p-4 text-center text-muted-custom">
+            <i class="fa-solid fa-box-open fa-2x mb-2"></i>
+            <p>No hay productos. Agrégalos desde <a href="/admin/" class="text-blue">el admin</a>.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- =====================================================================
+         COLUMNA DERECHA: ARTÍCULOS DE BLOG
+         ===================================================================== -->
+    <div class="col-lg-6">
+        <p class="section-header">
+            <span class="badge-section badge-blog me-2">
+                <i class="fa-solid fa-newspaper me-1"></i>CMS
+            </span>
+            Artículos de Blog
+        </p>
+
+        {% for articulo in articulos %}
+        <!--
+            Misma lógica de iteración que con productos.
+            El template es casi idéntico en estructura — pero los datos son diferentes.
+            Esto ilustra que la MISMA VISTA y el MISMO modelo Comentario sirven a ambos.
+        -->
+        <div class="card-dark p-4 mb-3">
+
+            <!-- Encabezado del artículo -->
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <a href="{% url 'nucleo:articulo_detail' articulo.pk %}"
+                   class="text-decoration-none"
+                   style="font-size:1rem; font-weight:500; color: var(--text-primary);">
+                    {{ articulo.titulo }}
+                </a>
+                <span class="badge-section badge-blog">ID: {{ articulo.id }}</span>
+            </div>
+
+            <p class="text-muted-custom mt-2 mb-3" style="font-size:0.85rem;">
+                {{ articulo.contenido|truncatewords:18 }}
+            </p>
+
+            <hr class="divider">
+
+            <!-- Comentarios existentes del artículo -->
+            {% with comentarios=articulo.comentarios.all %}
+            {% if comentarios %}
+            <div class="mb-3">
+                <p class="section-header">
+                    <i class="fa-regular fa-comments me-1"></i>
+                    {{ comentarios.count }} Comentario{{ comentarios.count|pluralize }}
+                    <!--
+                        AQUÍ APARECE tipo_art, no tipo_prod.
+                        Aunque el HTML es casi idéntico al de Producto, el número es diferente.
+                        Eso es exactamente el polimorfismo: mismo patrón, diferente tipo.
+                    -->
+                    <span class="badge-section badge-comentario ms-2">content_type={{ tipo_art }}</span>
+                </p>
+                {% for comentario in comentarios %}
+                <div class="comment-item" style="border-left-color: var(--accent-blue);">
+                    <div class="d-flex justify-content-between">
+                        <span class="comment-autor" style="color: var(--accent-blue);">
+                            <i class="fa-solid fa-user me-1" style="font-size:0.7rem;"></i>
+                            {{ comentario.autor }}
+                        </span>
+                        <span class="comment-fecha">
+                            {{ comentario.fecha_creacion|date:"d/m/Y H:i" }}
+                        </span>
+                    </div>
+                    <p class="comment-texto mb-0">{{ comentario.texto }}</p>
+                    <small class="text-muted-custom" style="font-size:0.68rem;">
+                        object_id={{ comentario.object_id }} · ct={{ comentario.content_type_id }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted-custom mb-3" style="font-size:0.82rem;">
+                <i class="fa-regular fa-comment me-1"></i>Sin comentarios todavía.
+            </p>
+            {% endif %}
+            {% endwith %}
+
+            <!-- Formulario para agregar comentario al Artículo -->
+            <form action="{% url 'nucleo:agregar_comentario' %}" method="POST">
+                {% csrf_token %}
+
+                <!--
+                    MISMO formulario, MISMA acción — pero distinto content_type_id (tipo_art).
+                    La vista AgregarComentarioView no cambia nada de su lógica.
+                    Solo recibe números distintos y crea el Comentario apuntando al artículo.
+                -->
+                <input type="hidden" name="content_type_id" value="{{ tipo_art }}">
+                <input type="hidden" name="object_id" value="{{ articulo.id }}">
+
+                <div class="mb-2">
+                    <input type="text"
+                           name="autor"
+                           class="form-ctrl-dark form-control mb-2"
+                           placeholder="Tu nombre (opcional)"
+                           maxlength="80">
+                </div>
+                <div class="input-group">
+                    <input type="text"
+                           name="texto"
+                           class="form-ctrl-dark form-control"
+                           placeholder="Comenta sobre este artículo..."
+                           required>
+                    <button type="submit" class="btn-pastel-purple" style="border-color: rgba(147,197,253,0.35); color: var(--accent-blue);">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-3">
+                <a href="{% url 'nucleo:articulo_detail' articulo.pk %}" class="btn-pastel-blue">
+                    <i class="fa-solid fa-arrow-right me-1"></i>Leer artículo
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card-dark p-4 text-center text-muted-custom">
+            <i class="fa-solid fa-newspaper fa-2x mb-2"></i>
+            <p>No hay artículos. Agrégalos desde <a href="/admin/" class="text-blue">el admin</a>.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
 {% endblock %}

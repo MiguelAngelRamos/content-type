@@ -1,6 +1,6 @@
 {% extends "nucleo/base.html" %}
 
-{% block title %}{{ producto.nombre }} — Detalle{% endblock %}
+{% block title %}{{ articulo.titulo }} — Blog{% endblock %}
 
 {% block content %}
 
@@ -14,41 +14,37 @@
                 <i class="fa-solid fa-house-chimney me-1"></i>Feed
             </a>
         </li>
-        <li class="breadcrumb-item active" style="color: var(--accent-green);">
-            {{ producto.nombre }}
+        <li class="breadcrumb-item active" style="color: var(--accent-blue);">
+            {{ articulo.titulo|truncatechars:40 }}
         </li>
     </ol>
 </nav>
 
 <!-- =========================================================================
-     CARD PRINCIPAL DEL PRODUCTO
+     CONTENIDO DEL ARTÍCULO
      ========================================================================= -->
 <div class="row g-4">
     <div class="col-lg-7">
         <div class="card-dark p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <span class="badge-section badge-producto mb-2 d-inline-block">
-                        <i class="fa-solid fa-box me-1"></i>Producto · ID {{ producto.id }}
-                    </span>
-                    <h2 style="font-size:1.5rem; font-weight:600; color: var(--text-primary);">
-                        {{ producto.nombre }}
-                    </h2>
-                    <div class="precio-tag mt-1">${{ producto.precio }}</div>
-                </div>
-            </div>
+            <span class="badge-section badge-blog mb-3 d-inline-block">
+                <i class="fa-solid fa-newspaper me-1"></i>Blog · ID {{ articulo.id }}
+            </span>
+            <h2 style="font-size:1.5rem; font-weight:600; color: var(--text-primary);">
+                {{ articulo.titulo }}
+            </h2>
 
-            {% if producto.descripcion %}
-            <p class="text-muted-custom mt-3" style="font-size:0.9rem; line-height:1.7;">
-                {{ producto.descripcion }}
+            <hr class="divider">
+
+            <p style="font-size:0.92rem; line-height:1.8; color: var(--text-secondary);">
+                {{ articulo.contenido }}
             </p>
-            {% endif %}
 
             <hr class="divider">
 
             <!--
-                PANEL TÉCNICO: Muestra los valores reales de ContentType para este Producto.
-                Ideal para mostrar en clase qué números se envían en el formulario.
+                PANEL TÉCNICO: Equivalente al del detalle de Producto pero para ArticuloBlog.
+                Los números serán diferentes: tipo_art ≠ tipo_prod.
+                Eso es exactamente lo que queremos mostrar: mismo patrón, tipo diferente.
             -->
             <div class="card-dark-inner p-3">
                 <p class="section-header mb-2">
@@ -58,53 +54,53 @@
                     <div>
                         <span class="text-muted-custom">content_type_id</span><br>
                         <!--
-                            tipo_prod = ContentType.objects.get_for_model(Producto).id
-                            Este número identifica al modelo Producto en django_content_type.
+                            tipo_art = ContentType.objects.get_for_model(ArticuloBlog).id
+                            Este número identifica al modelo ArticuloBlog en django_content_type.
+                            Es DIFERENTE al de Producto — esa diferencia es la magia del polimorfismo.
                         -->
-                        <span class="text-yellow fw-600 fs-5">{{ tipo_prod }}</span>
+                        <span class="text-yellow fw-600 fs-5">{{ tipo_art }}</span>
                     </div>
                     <div>
-                        <span class="text-muted-custom">object_id (este producto)</span><br>
-                        <span class="text-yellow fw-600 fs-5">{{ producto.id }}</span>
+                        <span class="text-muted-custom">object_id (este artículo)</span><br>
+                        <span class="text-yellow fw-600 fs-5">{{ articulo.id }}</span>
                     </div>
                     <div>
                         <span class="text-muted-custom">Total comentarios</span><br>
-                        <span class="text-green fw-600 fs-5">{{ comentarios.count }}</span>
+                        <span class="text-blue fw-600 fs-5">{{ comentarios.count }}</span>
                     </div>
                 </div>
                 <p class="text-muted-custom mt-2 mb-0" style="font-size:0.75rem;">
                     <!--
-                        #* La query SQL real que Django ejecuta al hacer producto.comentarios.all():
+                        #* La query SQL real que Django ejecuta al hacer articulo.comentarios.all():
                         #* SELECT * FROM nucleo_comentario
-                        #*   WHERE content_type_id = {{ tipo_prod }}
-                        #*   AND object_id = {{ producto.id }}
-                        #* Solo llegan los comentarios de ESTE producto.
+                        #*   WHERE content_type_id = {{ tipo_art }}
+                        #*   AND object_id = {{ articulo.id }}
+                        #* Mismo patrón de query que Producto, diferente content_type_id.
                     -->
                     <i class="fa-solid fa-code me-1"></i>
-                    SQL: <code>SELECT * FROM nucleo_comentario WHERE content_type_id={{ tipo_prod }} AND object_id={{ producto.id }}</code>
+                    SQL: <code>SELECT * FROM nucleo_comentario WHERE content_type_id={{ tipo_art }} AND object_id={{ articulo.id }}</code>
                 </p>
             </div>
         </div>
 
         <!-- ===================================================================
-             FORMULARIO DE COMENTARIO
+             FORMULARIO DE COMENTARIO PARA ARTÍCULO
              =================================================================== -->
         <div class="card-dark p-4">
             <p class="section-header">
-                <i class="fa-solid fa-pen-to-square me-1"></i>Agregar comentario
+                <i class="fa-solid fa-pen-to-square me-1"></i>Dejar un comentario
             </p>
 
             <!--
-                [9] FORMULARIO POLIMÓRFICO:
-                - action: apunta a la vista universal AgregarComentarioView
-                - content_type_id: fijo, identifica el modelo Producto
-                - object_id: fijo, identifica ESTE producto específico
-                La vista no necesita saber más — estos dos datos son suficientes.
+                [9] FORMULARIO POLIMÓRFICO para ArticuloBlog:
+                La acción es IDÉNTICA a la del formulario de Producto.
+                Solo cambia el valor de content_type_id (tipo_art) y object_id (articulo.id).
+                La vista AgregarComentarioView no distingue entre los dos — no necesita hacerlo.
             -->
             <form action="{% url 'nucleo:agregar_comentario' %}" method="POST">
                 {% csrf_token %}
-                <input type="hidden" name="content_type_id" value="{{ tipo_prod }}">
-                <input type="hidden" name="object_id" value="{{ producto.id }}">
+                <input type="hidden" name="content_type_id" value="{{ tipo_art }}">
+                <input type="hidden" name="object_id" value="{{ articulo.id }}">
 
                 <div class="mb-3">
                     <label class="text-muted-custom mb-1" style="font-size:0.82rem;">Tu nombre</label>
@@ -119,37 +115,35 @@
                     <textarea name="texto"
                               class="form-ctrl-dark form-control"
                               rows="3"
-                              placeholder="¿Qué opinas de este producto?"
+                              placeholder="¿Qué opinas de este artículo?"
                               required></textarea>
                 </div>
-                <button type="submit" class="btn-pastel-purple">
-                    <i class="fa-solid fa-paper-plane me-1"></i>Enviar comentario
+                <button type="submit" class="btn-pastel-purple" style="border-color: rgba(147,197,253,0.35); color: var(--accent-blue);">
+                    <i class="fa-solid fa-paper-plane me-1"></i>Publicar comentario
                 </button>
             </form>
         </div>
     </div>
 
     <!-- =====================================================================
-         COLUMNA DE COMENTARIOS
+         COLUMNA DE COMENTARIOS DEL ARTÍCULO
          ===================================================================== -->
     <div class="col-lg-5">
         <p class="section-header">
             <i class="fa-regular fa-comments me-1"></i>
             Comentarios ({{ comentarios.count }})
-            <span class="badge-section badge-comentario ms-2">content_type={{ tipo_prod }}</span>
+            <!--
+                El badge muestra tipo_art para que visualmente se compare con el
+                badge de tipo_prod en la página de Producto — distintos números.
+            -->
+            <span class="badge-section badge-comentario ms-2">content_type={{ tipo_art }}</span>
         </p>
 
         {% if comentarios %}
-            <!--
-                comentarios = self.object.comentarios.all()
-                resuelto en ProductoDetailView.get_context_data()
-                Django ejecuta la query solo cuando el template itera aquí.
-                Eso es el "lazy evaluation" de los QuerySets.
-            -->
             {% for comentario in comentarios %}
-            <div class="comment-item mb-2">
+            <div class="comment-item mb-2" style="border-left-color: var(--accent-blue);">
                 <div class="d-flex justify-content-between">
-                    <span class="comment-autor">
+                    <span class="comment-autor" style="color: var(--accent-blue);">
                         <i class="fa-solid fa-user me-1" style="font-size:0.7rem;"></i>
                         {{ comentario.autor }}
                     </span>
@@ -157,9 +151,9 @@
                 </div>
                 <p class="comment-texto mb-1">{{ comentario.texto }}</p>
                 <!--
-                    Dato pedagógico: mostramos los valores raw de la BD.
-                    content_type_id y object_id son los dos campos que Django
-                    usa para saber a qué objeto pertenece este comentario.
+                    Datos raw pedagógicos:
+                    comentario.content_type_id == tipo_art (identifica el modelo ArticuloBlog)
+                    comentario.object_id == articulo.id (identifica este artículo específico)
                 -->
                 <small class="text-muted-custom" style="font-size:0.68rem;">
                     <i class="fa-solid fa-link me-1"></i>
@@ -170,7 +164,7 @@
         {% else %}
             <div class="card-dark p-3 text-center text-muted-custom" style="font-size:0.85rem;">
                 <i class="fa-regular fa-comment fa-2x mb-2 d-block"></i>
-                Sé el primero en comentar este producto.
+                Aún no hay comentarios en este artículo.
             </div>
         {% endif %}
     </div>
