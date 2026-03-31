@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ContentTypes Demo{% endblock %}</title>
+
+    <!--
+        Bootstrap 5 CDN — Framework CSS para grid, componentes y utilidades.
+        Lo cargamos antes de nuestro CSS personalizado para poder sobreescribir sus estilos.
+    -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome — Iconos vectoriales (usados en botones de enviar, iconos de sección) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!--
+        Google Fonts — Outfit: tipografía moderna, geométrica y limpia.
+        Cargamos los pesos: 300 (light), 400 (regular), 500 (medium), 600 (semibold).
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+
+
+        :root {
+            /* --- Paleta de Fondo (Modo Oscuro) --- */
+            /* Usamos tonos grises casi negros (Slate dark) para evitar la fatiga visual
+               que produce el negro puro (#000000). */
+            --bg-main: #1C1917;    /* Color de fondo principal de toda la página */
+            --bg-surface: #292524; /* Un tono ligeramente más claro para los paneles frontales */
+
+            /* --- Textos --- */
+            /* Tampoco usamos blanco puro (#FFFFFF) para el texto. Un tono crema o
+               gris muy claro es mucho más suave para leer sobre fondo oscuro. */
+            --text-primary: #f5f5f4;   /* Texto principal (títulos, datos de tablas) */
+            --text-secondary: #a8a29e; /* Texto secundario (etiquetas, descripciones) */
+
+            /* --- Colores de Acento (Pasteles) --- */
+            /* En vez de colores primarios vibrantes (que chocan en modo oscuro),
+               usamos tonos "pastel", que están desaturados y son más elegantes. */
+            --accent-purple: #c4b5fd; /* Color principal (para botones primarios y logos) */
+            --accent-green: #86efac;  /* Para botones de guardar o notificaciones de éxito */
+            --accent-red: #fca5a5;    /* Para botones de eliminar o notificaciones de error */
+            --accent-blue: #93c5fd;   /* Para botones de editar o notificaciones informativas */
+            --accent-yellow: #fde047; /* Para destacar datos importantes (ej. cantidad de stock) */
+
+            /* --- Otros --- */
+            --border-color: #44403c; /* Color de las líneas divisorias que separan elementos */
+            --transition-speed: 0.25s; /* Velocidad estándar para todas las animaciones (hover, focus) */
+        }
+
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            /* Aplicamos la fuente Outfit a todo el cuerpo del documento */
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+   
+        .navbar-custom {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-brand-custom {
+            color: var(--accent-purple) !important;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-link-custom {
+            color: var(--text-secondary) !important;
+            font-size: 0.9rem;
+            transition: color var(--transition-speed);
+        }
+
+        .nav-link-custom:hover {
+            color: var(--accent-purple) !important;
+        }
+
+        /* =================================================================
+           CARDS / SUPERFICIES
+           ================================================================= */
+        .card-dark {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .card-dark-inner {
+            background-color: #201e1c;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        /* =================================================================
+           TIPOGRAFÍA DE ACENTO
+           ================================================================= */
+        .text-purple   { color: var(--accent-purple); }
+        .text-green    { color: var(--accent-green); }
+        .text-red      { color: var(--accent-red); }
+        .text-blue     { color: var(--accent-blue); }
+        .text-yellow   { color: var(--accent-yellow); }
+        .text-muted-custom { color: var(--text-secondary); }
+
+        /* =================================================================
+           BADGES DE SECCIÓN — Etiquetas de categoría visuales
+           ================================================================= */
+        .badge-section {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 999px; /* Pill shape */
+        }
+
+        .badge-producto {
+            background-color: rgba(134, 239, 172, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(134, 239, 172, 0.25);
+        }
+
+        .badge-blog {
+            background-color: rgba(147, 197, 253, 0.12);
+            color: var(--accent-blue);
+            border: 1px solid rgba(147, 197, 253, 0.25);
+        }
+
+        .badge-comentario {
+            background-color: rgba(196, 181, 253, 0.12);
+            color: var(--accent-purple);
+            border: 1px solid rgba(196, 181, 253, 0.25);
+        }
+
+        /* =================================================================
+           BOTONES PERSONALIZADOS
+           ================================================================= */
+        .btn-pastel-purple {
+            background-color: rgba(196, 181, 253, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(196, 181, 253, 0.35);
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all var(--transition-speed);
+            cursor: pointer;
+        }
+
+        .btn-pastel-purple:hover {
+            background-color: rgba(196, 181, 253, 0.28);
+            color: var(--accent-purple);
+        }
+
+        .btn-pastel-blue {
+            background-color: rgba(147, 197, 253, 0.12);
+            color: var(--accent-blue);
+            border: 1px solid rgba(147, 197, 253, 0.3);
+            border-radius: 8px;
+            padding: 5px 14px;
+            font-size: 0.82rem;
+            font-family: 'Outfit', sans-serif;
+            transition: all var(--transition-speed);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-pastel-blue:hover {
+            background-color: rgba(147, 197, 253, 0.22);
+            color: var(--accent-blue);
+        }
+
+        /* =================================================================
+           FORMULARIO DE COMENTARIOS
+           ================================================================= */
+        .form-ctrl-dark {
+            background-color: #1C1917;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            transition: border-color var(--transition-speed);
+        }
+
+        .form-ctrl-dark:focus {
+            background-color: #1C1917;
+            border-color: var(--accent-purple);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.12);
+            outline: none;
+        }
+
+        .form-ctrl-dark::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* =================================================================
+           ITEM DE COMENTARIO
+           ================================================================= */
+        .comment-item {
+            border-left: 2px solid var(--accent-purple);
+            padding: 8px 12px;
+            border-radius: 0 6px 6px 0;
+            background-color: rgba(196, 181, 253, 0.04);
+            margin-bottom: 8px;
+        }
+
+        .comment-autor {
+            font-size: 0.78rem;
+            color: var(--accent-purple);
+            font-weight: 500;
+        }
+
+        .comment-fecha {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+
+        .comment-texto {
+            font-size: 0.88rem;
+            color: var(--text-primary);
+            margin-top: 4px;
+        }
+
+        /* =================================================================
+           PRECIO / DATO DESTACADO
+           ================================================================= */
+        .precio-tag {
+            color: var(--accent-yellow);
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        /* =================================================================
+           SEPARADORES
+           ================================================================= */
+        hr.divider {
+            border-color: var(--border-color);
+            margin: 16px 0;
+        }
+
+        /* =================================================================
+           SECCIÓN HEADER
+           ================================================================= */
+        .section-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+        }
+
+        /* =================================================================
+           FOOTER
+           ================================================================= */
+        .footer-dark {
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            padding: 20px 0;
+            margin-top: 60px;
+        }
+
+        /* =================================================================
+           SCROLLBAR (opcional, embellece en Chrome/Edge)
+           ================================================================= */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+
+    <nav class="navbar navbar-custom py-2">
+        <div class="container">
+            <a class="navbar-brand navbar-brand-custom" href="{% url 'nucleo:feed_principal' %}">
+                <i class="fa-solid fa-diagram-project me-2"></i>ContentTypes Demo
+            </a>
+            <div class="d-flex gap-3">
+                <a href="{% url 'nucleo:feed_principal' %}" class="nav-link-custom">
+                    <i class="fa-solid fa-house-chimney me-1"></i>Feed
+                </a>
+                <a href="/admin/" class="nav-link-custom">
+                    <i class="fa-solid fa-gear me-1"></i>Admin
+                </a>
+            </div>
+        </div>
+    </nav>
+
+
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+
+    <footer class="footer-dark text-center">
+        <div class="container">
+            <span class="text-purple">django.contrib.contenttypes</span>
+            &mdash; Un modelo de Comentario, relaciones polimórficas infinitas.
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS (Bundle incluye Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

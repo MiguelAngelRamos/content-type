@@ -29,8 +29,12 @@ class FeedPrincialView(View):
 
 # Create your views here.
 class ProductoDetailView(DetailView):
-    pass
+    model = Producto
+    template_name = 'nucleo/producto_detail.html'
+    context_object_name = 'producto'
 
 
 class ArticuloBlogDetailView(DetailView):
-    pass
+    model = ArticuloBlog
+    template_name = 'nucleo/articulo_blog_detail.html'
+    context_object_name = 'articulo'

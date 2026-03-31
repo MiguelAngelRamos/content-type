@@ -1,0 +1,9 @@
+{% extends "nucleo/base.html" %}
+
+{% block content %}
+
+{% for producto in productos %}
+{% empty %}
+<p>No hay productos disponibles.</p>
+{% endfor %}
+{% endblock %}
